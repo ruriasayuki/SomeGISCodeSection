@@ -1,0 +1,1 @@
+换用mapv来解决echarts的custom和baidumap结合时绘制效率底下的问题

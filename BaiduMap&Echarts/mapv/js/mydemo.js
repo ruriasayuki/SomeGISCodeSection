@@ -1,7 +1,7 @@
 $(document).ready(function() {
     //echart+baiduMap
 	
-	$.getJSON("../data/Qing_prov_t.json",function(data){
+	$.getJSON("Qing_prov_t.json",function(data){
 		baiduPointArray=[];
 		var features = data.features;
 		var GeoNum = 0;
