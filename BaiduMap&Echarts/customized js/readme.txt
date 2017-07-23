@@ -1,0 +1,2 @@
+echarts.ForceNotMergeSeries.js
+强制进行了Series在setOption的时候的更新,使用本版本js的时候setOption的notMerge不为true的时候也会防止series被merge.
