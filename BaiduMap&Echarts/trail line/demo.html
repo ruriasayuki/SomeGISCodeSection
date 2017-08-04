@@ -22,40 +22,83 @@
     <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=1XjLLEhZhQNUzd93EjU5nOGQ"></script>
 </head>
 <body>
-    <button onclick="mymove(endP)">移动测试</button>
+    <button onclick="mymove()">移动测试</button>
     <div id="map"></div>
- <script> 
-        var endP=new BMap.Point(120,30);
+ <script>
+        var testList=[
+            {
+                lng:110,
+                lat:30,
+                time:760,
+                next:1
+            },
+            {
+                lng:130,
+                lat:35,
+                time:760.4,
+                next:2
+            },
+            {
+                lng:120,
+                lat:30,
+                time:761,
+                next:3
+            },
+            {
+                lng:115,
+                lat:39,
+                time:761.7,
+                next:4
+            },
+            {
+                lng:110,
+                lat:40,
+                time:762,
+                next:0
+            }
+        ]
+        var mymark;
+        var nowPos,nextPos;
         var mybmap = new BMap.Map("map");
+        var dx,dy;
+        var newx,newy,newc;
         mybmap.centerAndZoom(new BMap.Point(110, 40), 5);  // 初始化地图,设置中心点坐标和地图级别
 	    mybmap.addControl(new BMap.MapTypeControl());   //添加地图类型控
         mybmap.enableScrollWheelZoom(true); 
-        var newx;
-        var newy;
-        var newc;
-        var dx;
-        var dy;
-        var mymarker = new BMap.Marker(new BMap.Point(110,40));
-        mymarker.setLabel(new BMap.Label("李白"));
-        mybmap.addOverlay(mymarker);
+
 </script>
 <script>
-    function move(nowx,nowy,dx,dy,count)
+    function move(nowx,nowy,count)
         {
             mymarker.setPosition(new BMap.Point(nowx,nowy));
             newx = nowx+dx;
             newy = nowy+dy;
             newc = count-1;
-            if(newc>0) setTimeout("move(newx,newy,dx,dy,newc)",100)
+            if(newc>0) setTimeout("move(newx,newy,newc)",100);
+            else if(nextPos.next!=0)
+            {
+                nowPos = nextPos;
+                nextPos = testList[nowPos.next];
+                nowx = nowPos.lng;
+                nowy = nowPos.lat;
+                count = (nextPos.time-nowPos.time)*100;
+                dx = (nextPos.lng-nowx)/count;
+                dy = (nextPos.lat-nowy)/count;
+                move(nowx,nowy,count);
+            }
         }
-function mymove(endPoint)
+        function mymove()
 {
-     var startPos = mymarker.getPosition();
-        dx = (endPoint.lng-startPos.lng)/100;
-        dy = (endPoint.lat-startPos.lat)/100;
-        var nowx = startPos.lng+dx;
-        var nowy = startPos.lat+dy;
-    move(nowx,nowy,dx,dy,100);      
+    nowPos = testList[0];
+    mymarker = new BMap.Marker(new BMap.Point(nowPos.lng,nowPos.lat));
+    mybmap.addOverlay(mymarker);
+    nextPos = testList[testList[0].next];
+    newx = nowPos.lng;
+    newy = nowPos.lat;
+    count = (nextPos.time-nowPos.time)*100;
+    dx = (nextPos.lng-newx)/count;
+    dy = (nextPos.lat-newy)/count;
+    move(newx,newy,count);
 }
 
 </script>
