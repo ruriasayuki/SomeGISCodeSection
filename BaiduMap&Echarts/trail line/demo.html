@@ -239,7 +239,11 @@ function updatePos()
 		}
 		else if(ValueList.nowPos.time<time)
 		{
-			testGroup[i].marker = new BMap.Marker(new BMap.Point(ValueList.nowPos.lng,ValueList.nowPos.lat));
+			testGroup[i].marker = new BMap.Marker(new BMap.Point(ValueList.nowPos.lng,ValueList.nowPos.lat),
+			{
+				offset:new BMap.Size(0,0),
+				icon:new BMap.Icon('../img/libai.jpg',new BMap.Size(50,50))
+			});
 			testGroup[i].linePoints.push(new BMap.Point(ValueList.nowPos.lng,ValueList.nowPos.lat));
 			testGroup[i].linePoints.push(new BMap.Point(ValueList.nowPos.lng,ValueList.nowPos.lat));
 			testGroup[i].line = new BMap.Polyline(testGroup[i].linePoints);
