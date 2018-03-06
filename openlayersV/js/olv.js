@@ -44,12 +44,14 @@ OlvLayer.prototype.clone = function(a){
 }
 OlvLayer.prototype._init = function(){
     this._layer = new ol.layer.Image({
-            source: new ol.source.ImageVector({
-              source: new ol.source.Vector({
-                features: this._geoJson.features,
-                format: new ol.format.GeoJSON()
-              }),
-              style: this.style
+        source: new ol.source.ImageVector({
+            attributions:this.layerid, 
+            source: new ol.source.Vector({
+            
+            url: this._geoJson,
+            format: new ol.format.GeoJSON()
+          }),
+          style: this.style
             }
             )
     });
