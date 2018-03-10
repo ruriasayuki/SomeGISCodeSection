@@ -160,6 +160,8 @@ var styles = {
     })
   };
 var mybmap;
+var layer;
+var layerMana;
 $(document).ready( function (){
     mybmap = new ol.Map({
    layers: [
@@ -175,7 +177,15 @@ $(document).ready( function (){
      center: [120, 38],
      zoom: 4
    })
- });}
+ });
+    layerMana = new oltaMana("layerMana");
+    layer = new oltaLayer();
+    layer.addNode(new oltaKeyNode(120,30,1,1));
+    layer.addNode(new oltaKeyNode(120,31,2,2));
+    layer.addNode(new oltaKeyNode(120,32,3,3));
+    layer.addNode(new oltaKeyNode(121,34,4,0));
+    layerMana.addLayer(layer);
+    }
 );
 
 //重构之后的结构
@@ -183,97 +193,7 @@ $(document).ready( function (){
 var time,overtime;
 function start()
 {
-	//轨迹图动画入口，要做一些动画的相关变量的初始化工作
-	for(var i=0;i<testList.length;i++)
-	{
-		testGroup[i].nowPos=testList[i][0];
-	}
-	time = 760;//伪代码 mintime表示点要素列表里面时间的最小值
-	overtime = 763;//伪代码+1 表示点要素列表里面的时间的最大值
-	timestart();//然后开始计时
+    layerMana.initAnime ();
+    
+	layerMana.startAnime();//然后开始计时
 }
-function timestart()
-{
-	updatePos();
-	//这里就只改变时间 然后设定一个延迟
-	time = time+0.001;//精度还可以更高，这个参数和下面的时间回调频率会影响动画的精度
-	if(time<overtime) setTimeout("timestart()",10);
-}
-function timestop()//停止计时器
-{
-}
-function timereset()//重设计时器以及所有动画相关变量
-{
-}
-function updatePos()
-{
-	for(var i=0;i<testList.length;i++)
-	{
-		var PointList = testList[i];
-		var ValueList = testGroup[i];
-		if(ValueList.hasStart)
-		{
-			if(time>ValueList.nextPos.time)
-			{
-				if(ValueList.nextPos.next!=0)
-				{
-					testGroup[i].nowPos = ValueList.nextPos;
-					testGroup[i].nextPos = PointList[ValueList.nextPos.next];
-					testGroup[i].marker.setCoordinates([testGroup[i].nowPos.lng,testGroup[i].nowPos.lat]);
-					testGroup[i].linePoints.push([ValueList.nowPos.lng,ValueList.nowPos.lat]);
-					testGroup[i].line.setCoordinates(testGroup[i].linePoints);
-				}
-			}
-			else 
-			{
-				var x1,x2,y1,y2,t1,t2;
-				x1 = testGroup[i].nowPos.lng;
-				y1 = testGroup[i].nowPos.lat;
-				t1 = testGroup[i].nowPos.time;
-				x2 = testGroup[i].nextPos.lng;
-				y2 = testGroup[i].nextPos.lat;
-				t2 = testGroup[i].nextPos.time;
-				var nx,ny;
-				nx = (x2-x1)*(time-t1)/(t2-t1)+x1;
-				ny = (y2-y1)*(time-t1)/(t2-t1)+y1;
-				testGroup[i].marker.setCoordinates([nx,ny]);
-				testGroup[i].linePoints.splice(-1,1,[nx,ny]);
-				testGroup[i].line.setCoordinates(testGroup[i].linePoints);
-			}
-		}
-		else if(ValueList.nowPos.time<time)
-		{
-
-			testGroup[i].marker = new ol.geom.Point([ValueList.nowPos.lng,ValueList.nowPos.lat])
-
-			testGroup[i].linePoints.push([ValueList.nowPos.lng,ValueList.nowPos.lat]);
-			testGroup[i].linePoints.push([ValueList.nowPos.lng,ValueList.nowPos.lat]);
-            testGroup[i].line = new ol.geom.LineString(testGroup[i].linePoints);
-            var routeFeature = new ol.Feature({
-                type: 'route',
-                geometry: testGroup[i].line 
-              });
-              var geoMarker = new ol.Feature({
-                type: 'geoMarker',
-                geometry: testGroup[i].marker
-              });
-            var vectorLayer = new ol.layer.Vector({
-                source: new ol.source.Vector({
-                  features: [routeFeature,geoMarker]
-                }),
-                style: function(feature) {
-                  // hide geoMarker if animation is active
-                //   if (feature.get('type') === 'geoMarker') {
-                //     return null;
-                //   }
-                  return styles[feature.get('type')];
-                }
-              });
-        
-			mybmap.addLayer(vectorLayer);
-			testGroup[i].hasStart = true;
-			testGroup[i].nextPos = PointList[ValueList.nowPos.next];
-		}
-	}
-}
-  

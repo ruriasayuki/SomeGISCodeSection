@@ -1,9 +1,8 @@
-var oltaKeyNode = function(){
-    this.lng = 0;
-    this.lag = 0;
-    this.time = null;
-    this.next = 0;
-    
+var oltaKeyNode = function(lng,lat,time,next){
+    this.lng = lng||0;
+    this.lat = lat||0;
+    this.time = time||null;
+    this.next = next||0;
 }
 
 var oltaLayer = function(){
@@ -67,25 +66,25 @@ oltaMana.prototype.addLayer = function (layer){
 
 oltaMana.prototype.initAnime = function(){
     for(let i = 0;i<this.layerNum;i++){
-        layers[i].nowPos = layers[i].keyNodes[0];
+        this.layers[i].nowPos = this.layers[i].keyNodes[0];
     }
-    time = minTime;
+    this.time = this.minTime;
 }
 
 oltaMana.prototype.startAnime = function(){
 	this.updatePos();
 	//这里就只改变时间 然后设定一个延迟
-	time = time+0.001;//精度还可以更高，这个参数和下面的时间回调频率会影响动画的精度
-	if(time<overtime) setTimeout(this.name+".timestart()",10);
+	this.time = this.time+0.001;//精度还可以更高，这个参数和下面的时间回调频率会影响动画的精度
+	if(this.time<this.maxTime) setTimeout(this.name+".startAnime()",10);
 }
 
-oltaMana.prototype.updatePos() = function(){
+oltaMana.prototype.updatePos = function(){
     for(let i = 0; i<this.layerNum;i++)
 	{
-		let nowLayer = layers[i];
+		let nowLayer = this.layers[i];
 		if(nowLayer.hasStart)
 		{
-			if(time>nowLayer.nextPos.time)
+			if(this.time>nowLayer.nextPos.time)
 			{
 				if(nowLayer.nextPos.next!=0)
 				{
@@ -106,14 +105,14 @@ oltaMana.prototype.updatePos() = function(){
 				y2 = nowLayer.nextPos.lat;
 				t2 = nowLayer.nextPos.time;
 				var nx,ny;
-				nx = (x2-x1)*(time-t1)/(t2-t1)+x1;
-				ny = (y2-y1)*(time-t1)/(t2-t1)+y1;
+				nx = (x2-x1)*(this.time-t1)/(t2-t1)+x1;
+				ny = (y2-y1)*(this.time-t1)/(t2-t1)+y1;
 				nowLayer.marker.setCoordinates([nx,ny]);
 				nowLayer.linePoints.splice(-1,1,[nx,ny]);
 				nowLayer.line.setCoordinates(nowLayer.linePoints);
 			}
 		}
-		else if(nowLayer.nowPos.time<time)
+		else if(nowLayer.nowPos.time<this.time)
 		{
 
 			nowLayer.marker = new ol.geom.Point([nowLayer.nowPos.lng,nowLayer.nowPos.lat])
@@ -145,7 +144,7 @@ oltaMana.prototype.updatePos() = function(){
 			mybmap.addLayer(vectorLayer);
             nowLayer.hasStart = true;
             nowLayer.vectorLayer = vectorLayer;
-			nowLayer.nextPos = PointList[nowLayer.nowPos.next];
+			nowLayer.nextPos = nowLayer.keyNodes[nowLayer.nowPos.next];
 		}
 	}
 }
