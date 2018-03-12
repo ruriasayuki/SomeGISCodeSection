@@ -1,11 +1,14 @@
-var oltaKeyNode = function(lng,lat,time,next){
+//olta is openlayers' trail animation
+var oltaKeyNode = function(lng,lat,time,next,label){
     this.lng = lng||0;
     this.lat = lat||0;
     this.time = time||null;
     this.next = next||0;
+    this.label = label||"";
 }
 
-var oltaLayer = function(){
+var oltaLayer = function(name){
+    this.name = name||'';
     this.keyNodes = new Array();
     this.marker = null;
     this.line = null;
@@ -18,9 +21,11 @@ var oltaLayer = function(){
     this.newy = 0;        
     this.newc = 0;
     this.hasStart = false;
+    this.notEnd = false;
     this.minTime = null;
     this.maxTime = null;
     this.vectorLayer = null;
+    this.popup = null;
 }
 
 var oltaMana = function(name){
@@ -67,33 +72,39 @@ oltaMana.prototype.addLayer = function (layer){
 oltaMana.prototype.initAnime = function(){
     for(let i = 0;i<this.layerNum;i++){
         this.layers[i].nowPos = this.layers[i].keyNodes[0];
+        this.layers[i].hasStart = false;
+        this.layers[i].notEnd = true;
     }
     this.time = this.minTime;
+    this.animate = true;
 }
 
 oltaMana.prototype.startAnime = function(){
 	this.updatePos();
 	//这里就只改变时间 然后设定一个延迟
 	this.time = this.time+0.001;//精度还可以更高，这个参数和下面的时间回调频率会影响动画的精度
-	if(this.time<this.maxTime) setTimeout(this.name+".startAnime()",10);
+	if(this.animate) setTimeout(this.name+".startAnime()",10);
 }
 
 oltaMana.prototype.updatePos = function(){
     for(let i = 0; i<this.layerNum;i++)
 	{
 		let nowLayer = this.layers[i];
-		if(nowLayer.hasStart)
+		if(nowLayer.hasStart&&nowLayer.notEnd)
 		{
 			if(this.time>nowLayer.nextPos.time)
 			{
-				if(nowLayer.nextPos.next!=0)
-				{
 					nowLayer.nowPos = nowLayer.nextPos;
 					nowLayer.nextPos = nowLayer.keyNodes[nowLayer.nextPos.next];
 					nowLayer.marker.setCoordinates([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
 					nowLayer.linePoints.push([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
-					nowLayer.line.setCoordinates(nowLayer.linePoints);
-				}
+                    nowLayer.line.setCoordinates(nowLayer.linePoints);
+                    $(nowLayer.popup.getElement()).find("#popup-content").html(nowLayer.nowPos.label);
+                    nowLayer.popup.setPosition([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
+                    if(nowLayer.nowPos.next==0) {
+                        nowLayer.notEnd=false;
+                        this.updateAnimeState();
+                    }
 			}
 			else 
 			{
@@ -112,7 +123,7 @@ oltaMana.prototype.updatePos = function(){
 				nowLayer.line.setCoordinates(nowLayer.linePoints);
 			}
 		}
-		else if(nowLayer.nowPos.time<this.time)
+		else if(nowLayer.nowPos.time<this.time&&nowLayer.notEnd)
 		{
 
 			nowLayer.marker = new ol.geom.Point([nowLayer.nowPos.lng,nowLayer.nowPos.lat])
@@ -139,12 +150,45 @@ oltaMana.prototype.updatePos = function(){
                 //   }
                   return styles[feature.get('type')];
                 }
+              }); 
+              //insert an popup 
+              var tDiv = document.createElement('div');
+              tDiv.innerHTML = '<div id="'+nowLayer.name+'popup" class="ol-popup">'+
+              '<a href="#" id="popup-closer" class="ol-popup-closer"></a>'+
+              '<div id="popup-content"></div>'+
+              '</div>';
+              document.body.appendChild(tDiv);
+              var overlay = new ol.Overlay({
+                element: tDiv ,
+                autoPan: true,
+                autoPanAnimation: {
+                  duration: 250
+                }
               });
-        
+              $(overlay.getElement()).find("#popup-content").html(nowLayer.nowPos.label);
+              
+              nowLayer.popup = overlay;
+            overlay.setPosition([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
+            mybmap.addOverlay(overlay);
 			mybmap.addLayer(vectorLayer);
             nowLayer.hasStart = true;
             nowLayer.vectorLayer = vectorLayer;
 			nowLayer.nextPos = nowLayer.keyNodes[nowLayer.nowPos.next];
 		}
 	}
+}
+oltaMana.prototype.updateAnimeState = function(){
+    let animate = false;
+    for(let i = 0; i < this.layerNum; i ++ ){
+        animate = animate || this.layers[i].notEnd;
+        if (animate) break;
+    }
+    this.animate = animation;
+}
+oltaMana.prototype.stopAnime = function(){
+    this.animate = false;
+}
+oltaMana.prototype.restartAnime = function(){
+    this.animate = true;
+    this.startAnime();
 }
