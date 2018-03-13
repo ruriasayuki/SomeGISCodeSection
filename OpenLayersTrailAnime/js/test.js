@@ -18,7 +18,7 @@ $(document).ready( function (){
      zoom: 4
    })
  });
-    layerMana = new oltaMana("layerMana");
+    layerMana = new oltaMana("layerMana",mybmap);
     layer = new oltaLayer("layer1");
     layer.addNode(new oltaKeyNode(120,30,1,1,"李白测试1"));
     layer.addNode(new oltaKeyNode(120,31,2,2,"李白在这里写下了一首诗"));
@@ -45,10 +45,6 @@ function start()
 }
 function space()
 {
-    layerMana.stopAnime ();
+    layerMana.switchAnime ();
 
-}
-function restart()
-{
-	layerMana.restartAnime();//然后开始计时
 }

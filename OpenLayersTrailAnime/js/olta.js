@@ -41,8 +41,9 @@ var oltaLayer = function(name){
     this.popup = null;
 }
 
-var oltaMana = function(name){
+var oltaMana = function(name,map){
     this.name = name;
+    this.map = map;
     this.layers =new Array();
     this.animate = false;
     this.time =-1;
@@ -99,9 +100,13 @@ oltaMana.prototype.addLayer = function (layer){
 
 oltaMana.prototype.initAnime = function(){
     for(let i = 0;i<this.layerNum;i++){
-        this.layers[i].nowPos = this.layers[i].keyNodes[0];
-        this.layers[i].hasStart = false;
-        this.layers[i].notEnd = true;
+        let tlayer = this.layers[i];
+        this.map.removeLayer(tlayer.vectorLayer);
+        this.map.removeOverlay(tlayer.popup);
+        tlayer.linePoints.splice(0,tlayer.linePoints.length);
+        tlayer.nowPos = tlayer.keyNodes[0];
+        tlayer.hasStart = false;
+        tlayer.notEnd = true;
     }
     this.time = this.minTime;
     this.animate = true;
@@ -193,8 +198,8 @@ oltaMana.prototype.updatePos = function(){
               
               nowLayer.popup = overlay;
             overlay.setPosition([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
-            mybmap.addOverlay(overlay);
-			mybmap.addLayer(vectorLayer);
+            this.map.addOverlay(overlay);
+			this.map.addLayer(vectorLayer);
             nowLayer.hasStart = true;
             nowLayer.vectorLayer = vectorLayer;
 			nowLayer.nextPos = nowLayer.keyNodes[nowLayer.nowPos.next];
@@ -209,10 +214,7 @@ oltaMana.prototype.updateAnimeState = function(){
     }
     this.animate = animate;
 }
-oltaMana.prototype.stopAnime = function(){
-    this.animate = false;
-}
-oltaMana.prototype.restartAnime = function(){
-    this.animate = true;
-    this.startAnime();
+oltaMana.prototype.switchAnime = function(){
+    this.animate = !this.animate;
+    if(this.animate) this.startAnime();
 }
