@@ -207,7 +207,7 @@ oltaMana.prototype.updateAnimeState = function(){
         animate = animate || this.layers[i].notEnd;
         if (animate) break;
     }
-    this.animate = animation;
+    this.animate = animate;
 }
 oltaMana.prototype.stopAnime = function(){
     this.animate = false;
