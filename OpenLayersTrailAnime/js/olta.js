@@ -11,7 +11,20 @@ var oltaLayer = function(name){
     this.name = name||'';
     this.keyNodes = new Array();
     this.marker = null;
+    this.markerStyle = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 7,
+          snapToPixel: false,
+          fill: new ol.style.Fill({color: 'black'}),
+          stroke: new ol.style.Stroke({
+            color: 'white', width: 2
+          })})});
     this.line = null;
+    this.lineStyle = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          width: 6, color: [237, 212, 0, 0.5]
+        })
+      });
     this.linePoints = new Array();
     this.nowPos = null;
     this.nextPos = null;
@@ -52,6 +65,21 @@ oltaLayer.prototype.addNode = function(node){
     }
 }
 
+oltaLayer.prototype.setStyle = function(styleJson){
+    this.lineStyle =  new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          width: styleJson.lineWidth, color: styleJson.lineColor
+        })
+      });
+    this.markerStyle = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: styleJson.markerWidth,
+          snapToPixel: false,
+          fill: new ol.style.Fill({color: styleJson.markerColor}),
+          stroke: new ol.style.Stroke({
+            color: 'white', width: 2
+          })})});
+}
 
 
 oltaMana.prototype.addLayer = function (layer){
@@ -132,25 +160,21 @@ oltaMana.prototype.updatePos = function(){
 			nowLayer.linePoints.push([nowLayer.nowPos.lng,nowLayer.nowPos.lat]);
             nowLayer.line = new ol.geom.LineString(nowLayer.linePoints);
             var routeFeature = new ol.Feature({
-                type: 'route',
-                geometry: nowLayer.line 
+                geometry: nowLayer.line
               });
-              var geoMarker = new ol.Feature({
-                type: 'geoMarker',
+              routeFeature.setStyle(nowLayer.lineStyle);
+            var geoMarker = new ol.Feature({
                 geometry: nowLayer.marker
               });
+              geoMarker.setStyle(nowLayer.markerStyle);
             var vectorLayer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                   features: [routeFeature,geoMarker]
                 }),
                 style: function(feature) {
-                  // hide geoMarker if animation is active
-                //   if (feature.get('type') === 'geoMarker') {
-                //     return null;
-                //   }
-                  return styles[feature.get('type')];
+                    return feature.getStyle();
                 }
-              }); 
+            }); 
               //insert an popup 
               var tDiv = document.createElement('div');
               tDiv.innerHTML = '<div id="'+nowLayer.name+'popup" class="ol-popup">'+

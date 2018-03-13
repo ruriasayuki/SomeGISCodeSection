@@ -14,6 +14,7 @@ $(document).ready(
           zoom: 4
         })
       });
+      
         var dataSet;
       $.ajaxSettings.async = false;
 		$.getJSON("json/new_qing_prov.json", function (geojson) {//demo的geojson还是写死的
@@ -25,5 +26,5 @@ $(document).ready(
                 }
         });
 		$.ajaxSettings.async = true;
-      olvLayer = new OlvLayer(map,dataSet,"","")
+      olvLayer = new OlvLayer(map,dataSet,"","");
     });
